@@ -293,11 +293,6 @@ export class GeminiService implements AIProvider {
     return JSON.parse(text);
   }
 
-  private isLocalModel(modelName: string): boolean {
-    const name = modelName.toLowerCase();
-    return name.includes('local') || name.includes('llama') || name.includes('qwen') || name.includes('coder');
-  }
-
   async callPhase(
     phase: 'planning' | 'coding' | 'review' | 'security' | 'performance' | 'uiux',
     input: string,
@@ -327,15 +322,11 @@ export class GeminiService implements AIProvider {
         break;
     }
 
-    if (this.isLocalModel(modelName)) {
-      return this.callPhaseWithOllama(modelName, systemInstruction, input);
-    }
-
     const key = process.env.GEMINI_API_KEY || process.env.API_KEY;
     if (!key || key === "undefined") throw new Error("GEMINI_API_KEY not found.");
 
     const ai = new GoogleGenAI({ apiKey: key });
-    const model = modelName.includes('pro') ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
+    const model = modelName;
 
     let lastError;
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -361,40 +352,5 @@ export class GeminiService implements AIProvider {
       }
     }
     throw new Error(`Gemini API failed after ${retries} attempts: ${lastError?.message}`);
-  }
-
-  private async callPhaseWithOllama(model: string, system: string, prompt: string): Promise<any> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout for local models
-
-    try {
-      const response = await fetch('http://127.0.0.1:11434/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: prompt }
-          ],
-          stream: false,
-          format: 'json'
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if (!response.ok) throw new Error(`Ollama error: ${response.statusText}`);
-      const data = await response.json();
-      
-      let content = data.message.content;
-      // Sanitize markdown code blocks if present
-      content = content.replace(/^```json\s*/i, '').replace(/```\s*$/i, '');
-      return JSON.parse(content);
-    } catch (e: any) {
-      clearTimeout(timeoutId);
-      Logger.error("Phase call failed", e, { component: 'GeminiService', model, provider: 'Ollama' });
-      throw new Error(`Local model execution failed: ${e.message}. Ensure Ollama is running at http://127.0.0.1:11434 and OLLAMA_ORIGINS="*" is set.`);
-    }
   }
 }
