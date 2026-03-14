@@ -45,13 +45,15 @@ const AppConfigView: React.FC<AppConfigViewProps> = ({ config, onUpdate, onBack 
   };
 
   const aiModels = [
-    { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro (Cloud)' },
-    { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash (Cloud)' },
+    { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro (Direct)' },
+    { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash (Direct)' },
     { id: 'openai/gpt-4o', name: 'GPT-4o (OpenRouter)' },
+    { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini (OpenRouter)' },
     { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet (OpenRouter)' },
-    { id: 'qwen3-coder:480b-cloud', name: 'Qwen3 Coder 480B (Local)' },
-    { id: 'codellama:7b-instruct-q4_0', name: 'CodeLlama 7B (Local)' },
-    { id: 'llama3-local', name: 'Llama 3 (Local)' }
+    { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku (OpenRouter)' },
+    { id: 'google/gemini-pro-1.5', name: 'Gemini 1.5 Pro (OpenRouter)' },
+    { id: 'google/gemini-flash-1.5', name: 'Gemini 1.5 Flash (OpenRouter)' },
+    { id: 'meta-llama/llama-3.1-405b-instruct', name: 'Llama 3.1 405B (OpenRouter)' }
   ];
 
   return (
@@ -96,10 +98,12 @@ const AppConfigView: React.FC<AppConfigViewProps> = ({ config, onUpdate, onBack 
               <select 
                 value={config.selected_model}
                 onChange={(e) => onUpdate({ ...config, selected_model: e.target.value })}
-                className="w-full p-5 rounded-2xl border bg-white/5 border-white/10 text-white focus:border-pink-500/40 outline-none transition-all"
+                className="w-full p-5 rounded-2xl border bg-white/5 border-white/10 text-white focus:border-pink-500/40 outline-none transition-all cursor-pointer"
               >
                 {aiModels.map(model => (
-                  <option key={model.id} value={model.id}>{model.name}</option>
+                  <option key={model.id} value={model.id} className="bg-zinc-900 text-white py-2">
+                    {model.name}
+                  </option>
                 ))}
               </select>
            </div>
